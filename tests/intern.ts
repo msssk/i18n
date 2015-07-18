@@ -49,6 +49,12 @@ export var useLoader = {
 export var loader = {
 	// Packages that should be registered with the loader in each testing environment
 	packages: [
+		{ name: 'dojo-core', location: 'node_modules/dojo-core' },
+		{ name: 'cldr-data', location: 'node_modules/cldr-data' },
+		// TODO: wut? this is crazy, but this is what globalize/globalize.js expects
+		{ name: 'cldr', location: 'node_modules/cldrjs/dist/cldr', main: '../cldr' },
+		{ name: 'cldrjs', location: 'node_modules/cldrjs/dist', main: 'cldr' },
+		{ name: 'globalize', location: 'node_modules/globalize/dist', main: 'globalize' },
 		{ name: 'src', location: '_build/src' },
 		{ name: 'tests', location: '_build/tests' }
 	]

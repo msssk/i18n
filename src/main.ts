@@ -66,7 +66,7 @@ function getCldrLocale(locale: string = systemLocale): Promise<string> {
 		).then(function ([ available, subtags, parents ]: [ AvailableLocales, {}, {} ]) {
 			Cldr.load(subtags, parents);
 			available.availableLocales.splice(available.availableLocales.indexOf('root'), 1);
-			Cldr._availableBundleMapQueue = available.availableLocales;
+			(<any> Cldr)._availableBundleMapQueue = available.availableLocales;
 			return Cldr;
 		});
 	}
@@ -80,29 +80,6 @@ export interface Options {
 	locale?: string;
 	require?: Require;
 }
-export interface DateFormatOptions {
-	skeleton?: string;
-	date?: string;
-	time?: string;
-	datetime?: string;
-	pattern?: string;
-}
-export interface NumberFormatOptions {
-	style?: string;
-	minimumIntergerDigits?: number;
-	minimumFractionDigits?: number;
-	maximumFractionDigits?: number;
-	minimumSignificantDigits?: number;
-	maximumSignificantDigits?: number;
-	round?: number;
-	useGrouping?: boolean;
-}
-export interface PluralFormatOptions {
-	type: string;
-}
-interface RelativeTimeFormatOptions {
-	form: string;
-}
 
 export default class I18n {
 	bundles: string[];
@@ -113,41 +90,61 @@ export default class I18n {
 	protected globalize: Globalize;
 
 	constructor(options?: Options) {
+		this.locale = options && options.locale; // TODO: || systemLocale?
+		this.globalize = new Globalize(this.locale || this.systemLocale);
 	}
 
 	load(): Promise<void> {
-		return null;
+		return getCldrLocale(this.locale).then(function () {
+			var locale = this.locale;
+
+			return getJson(
+				'cldr-data/supplemental/currencyData.json',
+				'cldr-data/supplemental/numberingSystems.json',
+				'cldr-data/supplemental/ordinals.json',
+				'cldr-data/supplemental/plurals.json',
+				'cldr-data/supplemental/timeData.json',
+				'cldr-data/supplemental/weekData.json',
+				`cldr-data/main/${locale}/ca-gregorian.json`,
+				`cldr-data/main/${locale}/currencies.json`,
+				`cldr-data/main/${locale}/dateFields.json`,
+				`cldr-data/main/${locale}/numbers.json`,
+				`cldr-data/main/${locale}/timeZoneNames.json`
+			).then(function (...cldrData: any[]) {
+				Globalize.load(...cldrData);
+			});
+		});
 	}
 
-	formatCurrency(amount: number, currency: string, options?: NumberFormatOptions): string {
-		return null;
+	formatCurrency(amount: number, currency: string, options?: Globalize.NumberOptions): string {
+		return this.globalize.formatCurrency(amount, currency, options);
 	}
-	formatDate(date: DateObject, options?: DateFormatOptions): string {
-		return null;
+	formatDate(date: DateObject, options?: Globalize.DateOptions): string {
+		return this.globalize.formatDate(new Date(date.time), options);
 	}
-	formatNumber(number: number, options?: NumberFormatOptions): string {
-		return null;
+	formatNumber(number: number, options?: Globalize.NumberOptions): string {
+		return this.globalize.formatNumber(number, options);
 	}
-	formatRelativeTime(value: number, unit: string, options?: RelativeTimeFormatOptions): string {
-		return null;
+	formatRelativeTime(value: number, unit: string, options?: Globalize.TimeOptions): string {
+		return this.globalize.formatRelativeTime(value, unit, options);
 	}
 
 	getMessage(messageId: string, ...variables: any[]): string {
-		return null;
+		return this.globalize.formatMessage(messageId, ...variables);
 	}
 	loadBundle(bundle: string): Promise<void> {
 		return null;
 	}
 
-	parseDate(date: string, options?: DateFormatOptions): DateObject {
-		return null;
+	parseDate(date: string, options?: Globalize.DateOptions): DateObject {
+		return new DateObject(this.globalize.parseDate(date, options));
 	}
-	parseNumber(string: string, options?: NumberFormatOptions): number {
-		return null;
+	parseNumber(string: string, options?: Globalize.NumberOptions): number {
+		return this.globalize.parseNumber(string, options);
 	}
 
-	pluralize(value: number, options?: PluralFormatOptions): string {
-		return null;
+	pluralize(value: number, options?: Globalize.PluralOptions): string {
+		return this.globalize.plural(value, options);
 	}
 }
 I18n.prototype.systemLocale = systemLocale;
