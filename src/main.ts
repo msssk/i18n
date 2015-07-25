@@ -31,9 +31,9 @@ const getJson: (...paths: string[]) => Promise<{}[]> = (function () {
 	}
 	else if (typeof define === 'function' && define.amd) {
 		return function (...paths: string[]): Promise<{}[]> {
-			return load(require, 'dojo-core/request').then(function ([ request ]: [ typeof coreRequest ]): Promise<{}> {
+			return load('dojo-core/request').then(function ([ request ]: [ { default: typeof coreRequest } ]): Promise<{}> {
 				return Promise.all(paths.map(function (path: string): Promise<{}> {
-					return request.get(path + '.json', { responseType: 'json' }).then(function (response) {
+					return request.default.get(path + '.json', { responseType: 'json' }).then(function (response) {
 						return response.data;
 					});
 				}));
@@ -60,9 +60,9 @@ let parentDataPromise: Promise<any>;
 function getCldrLocale(locale: string = systemLocale): Promise<string> {
 	if (!parentDataPromise) {
 		parentDataPromise = getJson(
-			'cldr-data/availableLocales',
-			'cldr-data/supplemental/likelySubtags',
-			'cldr-data/supplemental/parentLocales'
+			(<any> require).toUrl('cldr-data/availableLocales'),
+			(<any> require).toUrl('cldr-data/supplemental/likelySubtags'),
+			(<any> require).toUrl('cldr-data/supplemental/parentLocales')
 		).then(function ([ available, subtags, parents ]: [ AvailableLocales, {}, {} ]) {
 			Cldr.load(subtags, parents);
 			available.availableLocales.splice(available.availableLocales.indexOf('root'), 1);
@@ -90,28 +90,36 @@ export default class I18n {
 	protected globalize: Globalize;
 
 	constructor(options?: Options) {
-		this.locale = options && options.locale; // TODO: || systemLocale?
+		this.locale = options && options.locale; // TODO: || this.systemLocale?
 		this.globalize = new Globalize(this.locale || this.systemLocale);
 	}
 
-	load(): Promise<void> {
-		return getCldrLocale(this.locale).then(function () {
-			var locale = this.locale;
-
-			return getJson(
-				'cldr-data/supplemental/currencyData.json',
-				'cldr-data/supplemental/numberingSystems.json',
-				'cldr-data/supplemental/ordinals.json',
-				'cldr-data/supplemental/plurals.json',
-				'cldr-data/supplemental/timeData.json',
-				'cldr-data/supplemental/weekData.json',
-				`cldr-data/main/${locale}/ca-gregorian.json`,
-				`cldr-data/main/${locale}/currencies.json`,
-				`cldr-data/main/${locale}/dateFields.json`,
-				`cldr-data/main/${locale}/numbers.json`,
-				`cldr-data/main/${locale}/timeZoneNames.json`
-			).then(function (...cldrData: any[]) {
-				Globalize.load(...cldrData);
+	static load(locale: string = systemLocale): Promise<void> {
+		return new Promise<void>(function (resolve, reject) {
+			// TODO: shouldn't need 'any'
+			(<any> require)([
+				'cldrjs/cldr/unresolved'
+			], function () {
+				getCldrLocale(locale).then(function () {
+					return getJson(
+						(<any> require).toUrl('cldr-data/supplemental/currencyData'),
+						(<any> require).toUrl('cldr-data/supplemental/numberingSystems'),
+						(<any> require).toUrl('cldr-data/supplemental/ordinals'),
+						(<any> require).toUrl('cldr-data/supplemental/plurals'),
+						(<any> require).toUrl('cldr-data/supplemental/timeData'),
+						(<any> require).toUrl('cldr-data/supplemental/weekData'),
+						(<any> require).toUrl(`cldr-data/main/${locale}/ca-gregorian`),
+						(<any> require).toUrl(`cldr-data/main/${locale}/currencies`),
+						(<any> require).toUrl(`cldr-data/main/${locale}/dateFields`),
+						(<any> require).toUrl(`cldr-data/main/${locale}/numbers`),
+						(<any> require).toUrl(`cldr-data/main/${locale}/timeZoneNames`)
+					);
+				}).then(function (...cldrData: any[]) {
+					Globalize.load(...cldrData);
+					resolve();
+				}).catch(function (error: Error) {
+					reject(error);
+				});
 			});
 		});
 	}
