@@ -4,7 +4,13 @@ import load, { Require } from 'dojo-core/load';
 import Promise from 'dojo-core/Promise';
 import coreRequest from 'dojo-core/request';
 import Globalize = require('globalize');
-import Cldr = require('cldrjs');
+import GlobalizeCurrency = require('globalize/currency'); GlobalizeCurrency;
+import GlobalizeDate = require('globalize/date'); GlobalizeDate;
+import GlobalizeMessage = require('globalize/message'); GlobalizeMessage;
+import GlobalizeNumber = require('globalize/number'); GlobalizeNumber;
+import GlobalizePlural = require('globalize/plural'); GlobalizePlural;
+import GlobalizeRelativeTime = require('globalize/relative-time'); GlobalizeRelativeTime;
+import Cldr = require('cldr/unresolved');
 
 declare var require: Require;
 declare var define: any;
@@ -96,30 +102,25 @@ export default class I18n {
 
 	static load(locale: string = systemLocale): Promise<void> {
 		return new Promise<void>(function (resolve, reject) {
-			// TODO: shouldn't need 'any'
-			(<any> require)([
-				'cldrjs/cldr/unresolved'
-			], function () {
-				getCldrLocale(locale).then(function () {
-					return getJson(
-						(<any> require).toUrl('cldr-data/supplemental/currencyData'),
-						(<any> require).toUrl('cldr-data/supplemental/numberingSystems'),
-						(<any> require).toUrl('cldr-data/supplemental/ordinals'),
-						(<any> require).toUrl('cldr-data/supplemental/plurals'),
-						(<any> require).toUrl('cldr-data/supplemental/timeData'),
-						(<any> require).toUrl('cldr-data/supplemental/weekData'),
-						(<any> require).toUrl(`cldr-data/main/${locale}/ca-gregorian`),
-						(<any> require).toUrl(`cldr-data/main/${locale}/currencies`),
-						(<any> require).toUrl(`cldr-data/main/${locale}/dateFields`),
-						(<any> require).toUrl(`cldr-data/main/${locale}/numbers`),
-						(<any> require).toUrl(`cldr-data/main/${locale}/timeZoneNames`)
-					);
-				}).then(function (...cldrData: any[]) {
-					Globalize.load(...cldrData);
-					resolve();
-				}).catch(function (error: Error) {
-					reject(error);
-				});
+			getCldrLocale(locale).then(function () {
+				return getJson(
+					(<any> require).toUrl('cldr-data/supplemental/currencyData'),
+					(<any> require).toUrl('cldr-data/supplemental/numberingSystems'),
+					(<any> require).toUrl('cldr-data/supplemental/ordinals'),
+					(<any> require).toUrl('cldr-data/supplemental/plurals'),
+					(<any> require).toUrl('cldr-data/supplemental/timeData'),
+					(<any> require).toUrl('cldr-data/supplemental/weekData'),
+					(<any> require).toUrl(`cldr-data/main/${locale}/ca-gregorian`),
+					(<any> require).toUrl(`cldr-data/main/${locale}/currencies`),
+					(<any> require).toUrl(`cldr-data/main/${locale}/dateFields`),
+					(<any> require).toUrl(`cldr-data/main/${locale}/numbers`),
+					(<any> require).toUrl(`cldr-data/main/${locale}/timeZoneNames`)
+				);
+			}).then(function (...cldrData: any[]) {
+				Globalize.load(...cldrData);
+				resolve();
+			}).catch(function (error: Error) {
+				reject(error);
 			});
 		});
 	}

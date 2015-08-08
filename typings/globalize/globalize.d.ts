@@ -254,3 +254,33 @@ declare module 'globalize' {
 
 	export = Globalize;
 }
+
+declare module 'globalize/currency' {
+	import Globalize = require('globalize');
+	export = Globalize;
+}
+
+declare module 'globalize/date' {
+	import Globalize = require('globalize');
+	export = Globalize;
+}
+
+declare module 'globalize/message' {
+	import Globalize = require('globalize');
+	export = Globalize;
+}
+
+declare module 'globalize/number' {
+	import Globalize = require('globalize');
+	export = Globalize;
+}
+
+declare module 'globalize/plural' {
+	import Globalize = require('globalize');
+	export = Globalize;
+}
+
+declare module 'globalize/relative-time' {
+	import Globalize = require('globalize');
+	export = Globalize;
+}

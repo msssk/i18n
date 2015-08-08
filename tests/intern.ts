@@ -54,7 +54,7 @@ export var loader = {
 		// TODO: wut? this is crazy, but this is what globalize/globalize.js expects
 		{ name: 'cldr', location: 'node_modules/cldrjs/dist/cldr', main: '../cldr' },
 		{ name: 'cldrjs', location: 'node_modules/cldrjs/dist', main: 'cldr' },
-		{ name: 'globalize', location: 'node_modules/globalize/dist', main: 'globalize' },
+		{ name: 'globalize', location: 'node_modules/globalize/dist/globalize', main: '../globalize' },
 		{ name: 'src', location: '_build/src' },
 		{ name: 'tests', location: '_build/tests' }
 	]
