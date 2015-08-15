@@ -1,5 +1,6 @@
 import DateObject from 'dojo-core/DateObject';
 import has from 'dojo-core/has';
+import { Hash } from 'dojo-core/interfaces';
 import load, { Require } from 'dojo-core/load';
 import Promise from 'dojo-core/Promise';
 import coreRequest from 'dojo-core/request';
@@ -93,11 +94,12 @@ export default class I18n {
 	require: Require;
 	systemLocale: string;
 
+	protected _localeGlobalizes: Hash<Globalize>;
 	protected globalize: Globalize;
 
 	constructor(options?: Options) {
-		this.locale = options && options.locale; // TODO: || this.systemLocale?
-		this.globalize = new Globalize(this.locale || this.systemLocale);
+		this._localeGlobalizes = {};
+		this.switchToLocale(options.locale || systemLocale);
 	}
 
 	static load(locale: string = systemLocale): Promise<void> {
@@ -142,7 +144,9 @@ export default class I18n {
 		return this.globalize.formatMessage(messageId, ...variables);
 	}
 	loadBundle(bundle: string): Promise<void> {
-		return null;
+		return getJson(bundle).then(function (messageData: any[]) {
+			Globalize.loadMessages(messageData[0]);
+		});
 	}
 
 	parseDate(date: string, options?: Globalize.DateOptions): DateObject {
@@ -155,5 +159,16 @@ export default class I18n {
 	pluralize(value: number, options?: Globalize.PluralOptions): string {
 		return this.globalize.plural(value, options);
 	}
+
+	switchToLocale(locale: string): void {
+		this.locale = locale;
+
+		if (!this._localeGlobalizes[locale]) {
+			this._localeGlobalizes[locale] = new Globalize(locale);
+		}
+
+		this.globalize = this._localeGlobalizes[locale];
+	}
 }
+
 I18n.prototype.systemLocale = systemLocale;

@@ -1,7 +1,10 @@
 import DateObject from 'dojo-core/DateObject';
+import { Require } from 'dojo-loader/loader';
 import registerSuite = require('intern!object');
 import assert = require('intern/chai!assert');
 import I18n from 'src/main';
+
+declare var require: Require;
 
 let i18n:I18n;
 let dateObject = new DateObject(new Date(2015, 7, 7));
@@ -13,6 +16,7 @@ registerSuite({
 		assert.ok(I18n.prototype.systemLocale);
 	},
 
+	// TODO: subsequent tests are dependent on this one
 	'load and constructor'() {
 		// TODO: 'en-US' is not a thing in cldr-data
 		// systemLocale (from browser) is 'en-US'; use 'en' instead
@@ -39,7 +43,9 @@ registerSuite({
 	},
 
 	'loadBundle and getMessage'() {
-		// TODO
+		return i18n.loadBundle(require.toUrl('../data/messages/colors')).then(function () {
+			assert.strictEqual(i18n.getMessage('red'), 'red');
+		});
 	},
 
 	parseDate() {
