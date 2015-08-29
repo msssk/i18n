@@ -144,8 +144,32 @@ export default class I18n {
 		return this.globalize.formatMessage(messageId, ...variables);
 	}
 	loadBundle(bundle: string): Promise<void> {
-		return getJson(bundle).then(function (messageData: any[]) {
-			Globalize.loadMessages(messageData[0]);
+		let bundleParts = bundle.split('/');
+		let localeParts = this.globalize.cldr.attributes.bundle.split(Cldr.localeSep);
+		let bundlePaths = localeParts.map(function (localePart: string, index: number) {
+			let partialLocale = localeParts.slice(0, index + 1).join(Cldr.localeSep);
+			let bundlePath = bundleParts.slice(0, bundleParts.length - 1)
+				.concat(partialLocale)
+				.concat(bundleParts.slice(bundleParts.length - 1));
+
+			return bundlePath.join('/');
+		});
+
+		bundlePaths.unshift(bundleParts.slice(0, bundleParts.length - 1).concat('root').concat(
+			bundleParts.slice(bundleParts.length - 1)
+		).join('/'));
+
+		// TODO: getJson dies on error, we need to ignore and continue
+		return getJson.apply(null, bundlePaths).then(function (messageData: any[]) {
+			messageData.forEach(function (messageData: any, index: number) {
+				if (messageData) {
+					let bundle:any = {};
+					let partialLocale = localeParts.slice(0, index + 1).join(Cldr.localeSep);
+
+					bundle[partialLocale] = messageData;
+					Globalize.loadMessages(bundle);
+				}
+			});
 		});
 	}
 

@@ -44,7 +44,7 @@ registerSuite({
 
 	'loadBundle and getMessage'() {
 		return i18n.loadBundle(require.toUrl('../data/messages/colors')).then(function () {
-			assert.strictEqual(i18n.getMessage('red'), 'red');
+			assert.strictEqual(i18n.getMessage('red'), 'maroon');
 		});
 	},
 
