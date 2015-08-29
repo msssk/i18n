@@ -51,6 +51,17 @@ declare module 'cldr' {
 		 */
 		static once(event: string | RegExp, listener: Function): void;
 
+		attributes: {
+			bundle: string;
+			language: string;
+			minLanguageId: string;
+			maxLanguageId: string;
+			region: string;
+			script: string;
+			territory: string;
+			[ key: string ]: any;
+		};
+
 		/**
 		 * @requires 'cldr/event'
 		 */

@@ -167,6 +167,8 @@ declare module 'globalize' {
 		 */
 		static relativeTimeFormatter(unit: string, options?: Globalize.TimeOptions): Globalize.TimeFormatter;
 
+		cldr: Cldr;
+
 		constructor(locale: string | Cldr);
 
 		/**
